@@ -1,0 +1,76 @@
+[paths]
+project_root = "." # example-case root directory
+work_root = "." # run directories are created directly under this example root
+forcefield_dir = "amber14sb_parmbsc1.ff" # bundled force-field directory
+residue_types = "residuetypes.dat" # bundled residue type definition file
+topology = "topol.top" # topology input for the example
+water_itp = "WAT.itp" # inserted-molecule .itp; use "co/COM.itp" for bundled CO
+chk_mdp = "chk.mdp" # reference EM/check minimization mdp
+steep_mdp = "steep.mdp" # initial steepest-descent minimization mdp
+em_mdp = "em.mdp" # per-step relaxation mdp
+init_gro = "init.gro" # starting .gro structure for the example
+gas_gro = "COM.gro" # template molecule inserted by MC; use "co/COM.gro" for bundled CO
+
+[execution]
+gmx_cmd = "gmx_mpi" # GROMACS executable
+launcher_single = "mpirun -np 1" # launcher for serial commands like grompp/trjconv
+launcher_multi = "mpirun -np {cores}" # launcher for mdrun; {cores} expands automatically
+nodes = 1 # number of nodes assumed for local/sbatch launcher expansion
+cores_per_node = 32 # cores per node used to compute {cores}
+module_setup = [
+  "source /etc/profile.d/modules.sh", # fixed module initialization is allowed
+  "module purge", # restricted module operation rendered only in launchers
+  "module load gromacs", # arbitrary shell commands are rejected
+]
+
+[execution.env]
+GMX_MAXBACKUP = "-1" # disable GROMACS backup-file limit
+OMPI_MCA_opal_cuda_support = "0" # cluster-specific OpenMPI setting
+
+[anchor]
+anchor = "800ATC" # sphere mode only: shorthand anchor definition; resid+resname are normalized from this if present
+resid = 800 # sphere mode only: anchor residue id
+resname = "ATC" # sphere mode only: anchor residue name
+center_atoms = ["C2", "C4", "C7"] # sphere mode only: atoms used to define the alcove center
+
+[simulation]
+test_insertion = false # true: insertion-only debug mode; false: normal MC
+temperature = 298.15 # simulation temperature in K
+pressure = 1.0 # dimensionless activity/fugacity ratio p/p0; must be > 0
+max_trials = 500 # maximum MC trials per run
+max_consecutive_insertion_failures = 5 # stop early after this many consecutive insertion proposals fail with "Could not find valid insertion point"; set 0 to disable
+target_nmol = 30 # target cavity occupancy; in mask mode this is the number of waters inside the cavity
+mu0 = -25.48056 # calibrated excess chemical potential (kJ/mol); must match the molecular model/settings
+gas_constant = 0.008314 # gas constant in kJ/mol/K
+rmax = 0.6 # sphere mode only: insertion sphere radius in nm
+rvdw = 0.20 # hard clash cutoff in nm during proposal generation
+rfree = 2.0 # sphere mode only: restraint shell multiplier around the alcove
+v0 = 0.030345 # reference molecular volume in nm^3 (TIP3P value; recalibrate for another species/model)
+kres = 10000000.0 # position-restraint force constant
+max_e0_tries = 10 # retries allowed to obtain the initial reference energy
+mask_dx = 0.0 # mask mode only: proposal jitter; 0 means use the voxel spacing from cavity.meta.json
+
+[cavity]
+mode = "sphere" # "sphere" keeps the legacy anchor-centered region, "mask" uses build-cavity output
+# mask_file = "cavity_mask.dat" # required when mode="mask"
+# mask_meta = "cavity.meta.json" # recommended when mode="mask"; provides Veff and reference point
+restraint_radius = 1.2 # mask mode only: absolute radius in nm used for the restraint shell around the cavity reference point
+membership_padding = 0.02 # mask mode only: extra tolerance when checking whether a water oxygen is inside the voxel mask
+initial_delete_padding = 0.00 # mask mode only: extra one-time cleanup padding in nm when deleting initial waters from the voxel cavity; increase if edge waters survive startup
+
+[loop]
+sweep_values = [] # optional outer sweep values; empty means no sweep directories
+replica_dirs = ["00", "01", "02", "03", "04"] # explicit run-directory names
+replica_count = 5 # used only if replica_dirs is left empty
+sweep_dir_format = "{value}" # folder naming pattern for sweep values
+replica_dir_format = "{replica:02d}" # folder naming pattern when replica_dirs is auto-generated
+
+[slurm]
+enabled = true # if true, also generate sbatch scripts
+shebang = "#!/usr/bin/env bash" # generated launchers require Bash
+time_limit = "24:00:00" # sbatch walltime
+partition = "compute" # sbatch partition/queue
+account = "YOUR_ACCOUNT" # replace with your Slurm allocation/account
+job_name = "gcmc-port" # sbatch job name
+output = "slurm-%j.out" # sbatch stdout/stderr file pattern
+extra_directives = [] # additional raw #SBATCH directives

@@ -1,0 +1,107 @@
+[ moleculetype ]
+; molname       nrexcl
+MN3             1       ; MN ions
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       MN              1       MN3             MN1       1      1.963343
+2       MN              1       MN3	        MN2       1      1.794417
+3       MN              1       MN3	        MN3	  1 	 2.242239
+
+; molname       nrexcl
+;MN             1       ; MN ions
+
+;[ atoms ]
+;; id    at type         res nr  residu name     at name  cg nr  charge
+;1       MN              1       MN3             MN1       1      1.488876
+;2       MN              2       MN3             MN2       2      2.288418
+;3       MN              3       MN3             MN3       3      2.222706
+
+[ moleculetype ]
+; molname       nrexcl
+IB+             1       ; big positive ion
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       IB              1       IB+             IB       1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+CA              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       C0              1       CA              CA       1      2.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+CL              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Cl              1       CL              CL       1      -1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+NA              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Na              1       NA              NA       1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+MG              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       MG              1       MG              MG       1      2.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+K               1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       K               1       K               K        1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+RB              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Rb              1       RB              RB       1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+CS              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Cs              1       CS              CS       1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+LI              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Li              1       LI              LI       1      1.00000
+
+
+[ moleculetype ]
+; molname       nrexcl
+ZN              1
+
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+1       Zn              1       ZN              ZN       1      2.00000

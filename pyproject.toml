@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gcmc-port"
+version = "0.1.0"
+description = "Standalone Python port of the shell-based GCMC workflow"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [{ name = "PNNL GCMC Port" }]
+dependencies = [
+  "biopython>=1.84",
+  "matplotlib>=3.10",
+  "MDAnalysis>=2.10",
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "scikit-image>=0.24",
+]
+
+[project.scripts]
+gcmc-port = "gcmc_port.cli:main"
+pocketmc-analyses = "gcmc_port.analysis.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

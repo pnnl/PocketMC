@@ -1,0 +1,27 @@
+[ moleculetype ]
+; Name            nrexcl
+COM                1
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+; residue 500 COM rtp COM  q  0.0
+     1        CMT    500    COM     CJ      1    -0.7500     12.0100
+     2        MMO    500    COM     J1      2     1.6000      0.0000; qtot 0
+     3        OMT    500    COM    OJ1      3    -0.8500     15.9994; qtot 0
+
+[ constraints ]
+;     fixed   bond   length
+; Overall structure is 2--4---1---5--3
+;                        d (nm)
+     1       3      1  0.1128
+
+[ exclusions ]
+ 1   2   3
+ 2   1   3
+ 3   1   2
+
+[ virtual_sites2 ]
+; Vsite from    to    funct   a
+2       1       3     1       0.5 ; right in the middle
+
+; Include Position restraint file

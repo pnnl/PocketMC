@@ -1,0 +1,152 @@
+# All relative paths are resolved from this TOML file.
+[input]
+kind = "md"                         # "md" or "pocketmc"
+run_id = "example-md"
+topology = "run/md.tpr"
+trajectory = "run/md.xtc"
+reference = "run/previous.gro"
+
+# For a PocketMC accepted-state run, replace the fields above with:
+# kind = "pocketmc"
+# trajectory = "run/trajectory.gro"
+# mc_log = "run/mc.log"
+# trajectory_meta = "run/trajectory.meta.jsonl"
+
+# For replica/sweep expansion, set gcmc_config instead of run_id and use
+# topology/trajectory patterns relative to each generated run directory.
+# gcmc_config = "config.toml"
+
+# Mixed physical-MD/PocketMC selection written by the discovery wizard uses
+# explicit [[case]] tables instead of [input]. The legacy [input] form above
+# remains supported. Example:
+# [[case]]
+# id = "protein-a-md-01"
+# kind = "md"
+# system_id = "protein-a"
+# comparison_group = "homologs"
+# run_dir = "runs/protein-a/01"
+# topology = "runs/protein-a/01/md.tpr"
+# trajectory = "runs/protein-a/01/md.xtc"
+# reference = "runs/protein-a/01/previous.gro"
+# pocketmc_status = "confirmed"
+# pocketmc_evidence = ["mc.log", "trajectory.meta.jsonl"]
+# substrate_selection = "(resid 800 and resname ATC) or (resid 801 and resname OPP)"
+# pocket_selection = "protein and backbone and resid 45 78 102 145"
+# Per-case cavity overrides (written automatically by the discovery wizard):
+# cavity_mode = "mask"
+# cavity_mask = "runs/protein-a/01/cavity_mask.dat"
+# cavity_meta = "runs/protein-a/01/cavity.meta.json"
+# cavity_points = "runs/protein-a/01/cavity_points.pdb"
+# cavity_nearby_residues = "runs/protein-a/01/cavity_nearby_residues.tsv"
+# cavity_anchor = "800ATC" # may differ per case; unique ATC names are auto-resolved
+#
+# [[case]]
+# id = "protein-a-mc-01"
+# kind = "pocketmc"
+# system_id = "protein-a"
+# run_dir = "runs/protein-a/01"
+# trajectory = "runs/protein-a/01/trajectory.gro"
+# mc_log = "runs/protein-a/01/mc.log"
+# trajectory_meta = "runs/protein-a/01/trajectory.meta.jsonl"
+# A mask chosen for a case without prior MC can be generated only when a
+# launcher/run command executes (never while answering the wizard):
+# cavity_mode = "mask"
+# cavity_mask = "runs/protein-a/01/cavity_mask.dat"
+# cavity_meta = "runs/protein-a/01/cavity.meta.json"
+# cavity_build_enabled = true
+# cavity_build_source = "runs/protein-a/01/init.gro"
+# cavity_build_output_prefix = "runs/protein-a/01/cavity"
+# cavity_build_mode = "seeded"
+# cavity_build_exclude_residues = ["800ATC"]
+
+[molecule]
+preset = "water"                    # "water", "co", or "custom"
+# Custom example:
+# preset = "custom"
+# label = "Ligand"
+# resnames = ["LIG"]
+# point_mode = "cog"                # "atom", "cog", or "com"
+# atom_names = ["C1", "O1"]
+
+# Enable these sections for physical-MD substrate pose and cluster-conditioned
+# hydration analysis. Multiple ligand residues can be grouped in one selection.
+#[substrate]
+#enabled = true
+#selection = "(resid 800 and resname ATC) or (resid 801 and resname OPP)"
+#fit_selection = "resid 800 and resname ATC and not name H*" # blank/omitted = all substrate heavy atoms
+#heavy_selection = "not name H*"
+
+#[pose]
+#clusters = 3
+#seed = 2026
+#restarts = 20
+#reference = "canonical-pocket.pdb"
+#pocket_selection = "protein and backbone and (resid 45 78 102 145)"
+#reference_pocket_selection = "protein and backbone and (resid 45 78 102 145)"
+#site_hpd = 0.70
+#site_min_separation_a = 2.4
+#site_max_count = 20
+#site_integral_radius_a = 1.4
+
+#[pose.sampling]
+#max_frames_per_trajectory = 5000 # 0 means all eligible frames
+#strategy = "uniform"
+#write_trajectory = true
+
+# Optional interpreted pose descriptors. Point modes are atom, cog, com,
+# positive_charge_center, or negative_charge_center.
+#[[pose.feature]]
+#name = "ATC-positive_to_OPP-negative"
+#kind = "distance"
+#selections = ["resname ATC", "resname OPP"]
+#point_modes = ["positive_charge_center", "negative_charge_center"]
+#weight = 1.0
+
+#[[pose.feature]]
+#name = "six_member_ring"
+#kind = "ring_pucker"
+#selections = ["resname ATC and name C1 C2 C3 C4 C5 C6"]
+
+[cavity]
+mode = "sphere"                     # "sphere" or "mask"
+anchor = "800ATC"
+anchor_atoms = ["C2", "C4", "C7"]
+radius_nm = 0.60
+membership_padding_nm = 0.02
+# mask = "cavity_mask.dat"           # gcmc.py build-cavity default for prefix "cavity"
+# meta = "cavity.meta.json"
+# align_selection = "protein and not name H*"
+
+[analysis]
+tasks = ["all"]
+stride = 1
+gap_ps = 1000.0
+path_sample_ps = 1000.0
+contact_cutoff_a = 4.0
+density_bin_a = 1.0
+density_sigma_a = 2.0
+density_cutoff_sigma = 3.0
+density_quantity = "occupancy"
+rolling_window = 10
+# Optional local PDB/GRO sources for canonical and homolog residue labels:
+# canonical_source = "canonical.pdb"
+# canonical_chain = "A"
+# homolog_source = "homolog.pdb"
+# homolog_chain = "A"
+
+[output]
+root = "analysis-results"
+cache = true
+overwrite = true
+
+# Used by `analyses.py emit-sbatch` and `submit-sbatch`.
+#[slurm]
+#partition = "compute"
+#account = "YOUR_ACCOUNT"
+#time = "24:00:00"
+#nodes = 1
+#ntasks_per_node = 1  # analysis is not MPI; use one task and multiple CPUs per task
+#cpus_per_task = 1
+#memory = "8G"
+#job_name = "pocketmc-analysis"
+#module_setup = ["module load python"]
