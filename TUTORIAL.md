@@ -42,12 +42,41 @@ Choose one isolated Python setup below.
 
 ### 1.1 Conda Setup
 
+Create and activate the Python environment:
+
 ```bash
-conda create -n pocketmc python=3.12 pip -y
+conda create -n pocketmc python=3.12 pip
 conda activate pocketmc
-python -m pip install --upgrade pip setuptools wheel
+```
+
+Next, activate any personal GROMACS installation or load an HPC module, then
+verify whichever command it provides:
+
+```bash
+gmx --version
+# or: gmx_mpi --version
+```
+
+If both commands are unavailable, install the non-MPI `gmx` build in the active
+environment:
+
+```bash
+conda install -c conda-forge gromacs
+gmx --version
+```
+
+For the Open MPI build and `gmx_mpi`, install
+`"gromacs=*=mpi_openmpi_*"` instead. Do not combine the Conda build with a site
+module in the same shell.
+
+Finally, install PocketMC and its Python dependencies:
+
+```bash
 python -m pip install -e .
 ```
+
+The Conda GROMACS package supports Linux and macOS, not native Windows. Windows
+users can use it inside WSL/Linux.
 
 ### 1.2 Standard `venv` Setup
 
@@ -69,10 +98,10 @@ python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e .
 ```
 
-PocketMC requires Python 3.11 or newer. The install command above supplies the
-Python dependencies but not GROMACS. Load or activate a GROMACS installation in
-the same shell and verify either `gmx --version` or `gmx_mpi --version`. On an HPC
-system, use the module names provided by that site.
+PocketMC requires Python 3.11 or newer. A standard `venv` supplies the Python
+environment but not GROMACS. Load or activate a GROMACS installation in the same
+shell and verify either `gmx --version` or `gmx_mpi --version`. On an HPC system,
+use the module names provided by that site.
 
 Verify the PocketMC commands before continuing:
 

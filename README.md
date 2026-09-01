@@ -52,23 +52,47 @@ PocketMC requires:
 - GROMACS, exposed as either `gmx` or `gmx_mpi`
 - MPI only when you select the `gmx_mpi` execution style
 
-The Python installation and GROMACS installation are separate. `pip install`
-installs PocketMC and its Python dependencies, but it does not install GROMACS.
-On an HPC system, use the GROMACS/MPI modules provided by that site. On a local
-workstation, use a working GROMACS installation supported by your operating
-system; the upstream build procedure is documented in the
+`pip install` installs PocketMC and its Python dependencies, but it does not
+install GROMACS. If `gmx` and `gmx_mpi` are both missing, Option A below can
+install GROMACS from conda-forge in the same environment. On an HPC system,
+prefer the GROMACS/MPI modules provided by that site. The upstream build
+procedure is documented in the
 [GROMACS installation guide](https://manual.gromacs.org/documentation/current/install-guide/index.html).
 
 ### Option A: Conda Environment
 
-Conda is useful on clusters or workstations where you need an isolated Python
-without changing the system installation. Miniconda, Anaconda, or Mambaforge can
-provide the `conda` command.
+Create and activate the Python environment first:
 
 ```bash
-conda create -n pocketmc python=3.12 pip -y
+conda create -n pocketmc python=3.12 pip
 conda activate pocketmc
-python -m pip install --upgrade pip setuptools wheel
+```
+
+Before installing another copy, activate any personal GROMACS installation or
+load an available HPC module (`module avail gromacs` followed by the site's
+`module load ...` command). Then test whichever executable it provides:
+
+```bash
+gmx --version
+# or: gmx_mpi --version
+```
+
+If either version command succeeds, use that installation. If both commands are
+unavailable, install the
+[compiled conda-forge GROMACS package](https://anaconda.org/conda-forge/gromacs)
+in the active environment:
+
+```bash
+conda install -c conda-forge gromacs
+gmx --version
+```
+
+This installs the non-MPI `gmx` build. For the Open MPI `gmx_mpi` build, install
+`"gromacs=*=mpi_openmpi_*"` instead. PocketMC supports either build.
+
+Finally, install PocketMC and its Python dependencies:
+
+```bash
 python -m pip install -e .
 ```
 
@@ -77,17 +101,9 @@ reinstalling the package. For a fixed, non-editable installation, use
 `python -m pip install .` instead. Keep subsequent `pip` operations inside the
 activated Conda environment.
 
-Conda manages the Python environment here; GROMACS may still come from a site
-module. For example, after activating the environment on a cluster:
-
-```bash
-module avail gromacs
-module load gromacs
-gmx --version       # use this when the site exposes gmx
-# or: gmx_mpi --version
-```
-
-Module names vary by site. Record the required commands in
+The Conda package supports Linux and macOS, not native Windows; Windows users
+can use it inside WSL/Linux. Do not combine a site module and the Conda package
+in the same shell. Record any required module commands in
 `[execution].module_setup` or use the generated Tahoma-only launcher described
 below.
 
