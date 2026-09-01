@@ -714,6 +714,33 @@ That keeps the first custom run close to a known-working reference instead of ch
 
 ## 12. Analysis Wizard and Reproducible Runs
 
+### Supported analyses and outputs
+
+PocketMC Analyses supports both physical MD trajectories and PocketMC accepted
+states. It can generate:
+
+- 2D density projections in the XY, XZ, and YZ planes
+- 3D density isosurfaces as standalone PNGs and VMD-ready CUBE/Tcl sessions
+- cavity occupancy, entry/re-entry events, censored residence lifetimes,
+  residue paths, and per-molecule traces from physical MD
+- move-acceptance, occupancy, energy, state, and spatial-occurrence diagnostics
+  from PocketMC accepted states
+- common substrate-pose clusters, representative structures, discrete hydration
+  sites, and pocket-frame or substrate-frame density maps
+- aggregate replica/homolog comparisons, editable plots, and reusable VMD
+  visualization sessions
+
+<p align="center">
+  <img src="assets/docs/analysis-overview.png"
+       alt="PocketMC 2D and 3D density maps and molecular traces"
+       width="90%" />
+  <br />
+  <em>Examples of 2D and 3D density visualization and molecular tracing produced
+  by PocketMC Analyses.</em>
+</p>
+
+### Starting the wizard and saving a reproducible run
+
 Install the project in a Python 3.11+ environment (Python 3.14 is supported),
 then open the analysis wizard:
 
@@ -733,6 +760,56 @@ python analyses.py validate -c analyses.toml
 python analyses.py run -c analyses.toml --jobs 4
 python analyses.py run -c analyses.toml --tasks density,plots,vmd --force
 ```
+
+The complete command workflow is available without entering the wizard again:
+
+```bash
+# Validate or run a saved analysis
+python analyses.py validate -c analyses.toml
+python analyses.py run -c analyses.toml
+python analyses.py run -c analyses.toml --tasks density,vmd --runs replica-00 --jobs 4
+python analyses.py prepare-cavities -c analyses.toml
+python analyses.py emit-launchers -c analyses.toml -o .
+
+# Discover physical-MD and PocketMC cases without writing a configuration
+python analyses.py discover /path/to/cases --max-depth 4 --deep
+
+# Open GUI tools explicitly
+python analyses.py view-density analysis-results/run/density/density_maps.npz
+python analyses.py launch-vmd analysis-results/run/vmd/session.vmd.tcl
+
+# Generate or explicitly submit staged Slurm pose-analysis jobs
+python analyses.py emit-sbatch -c analyses.toml -o analysis-jobs
+python analyses.py submit-sbatch -c analyses.toml -o analysis-jobs
+```
+
+Start from [analysis.example.toml](analysis.example.toml). Relative paths are
+resolved from the TOML file. Setting `input.gcmc_config` inherits the PocketMC
+run/replica/sweep layout, inserted molecule, cavity, anchor, and GROMACS command;
+MD batches additionally provide topology and trajectory patterns below each run
+directory.
+
+The output layout is fixed:
+
+```text
+analysis-results/
+  plot_results.py
+  plot_style.json        saved interactive/CLI plot-only overrides
+  <run-id>/
+    .analysis_cache/     versioned JSON metadata and non-pickle NPZ records
+    tables/              frame, event/path, or MC state/move statistics
+    plots/               temporal, lifetime, path, density, and MC diagnostics
+    density/             compressed NPZ, CUBE, projection CSV, and metadata
+    vmd/                 protein/cavity/trace/density Tcl sessions
+    analysis_manifest.json
+  aggregate/             batch comparisons and ensemble summaries
+```
+
+Substrate-pose analysis also creates `poses/` below each MD run. It contains the
+training-frame mapping, canonical-aligned `cluster_training.xtc`, common-cluster
+assignments, representative structures and waters, hydration-site PDBs,
+pocket-frame and substrate-frame maps, and VMD sessions. Cross-homolog results
+are collected below `aggregate/pose-groups/<comparison-group>/`.
 
 For a custom molecule, choose `atom`, `cog`, or `com` as its representative
 point. `com` requires usable masses in the MD topology and fails explicitly
@@ -800,6 +877,12 @@ python analyses.py launch-vmd analysis-results/my-run/vmd/session.vmd.tcl
 The VMD session can display protein, sphere/mask, MD entry (red), exit (blue),
 resident (gray) traces, density CUBE, and nested 90/70/50/30% HPD layers. MC
 states are shown without state-to-state connecting lines.
+
+Headless molecular snapshots are also explicit:
+
+```bash
+python analyses.py render-vmd analysis-results/run/poses/cluster_01/render_headless.vmd.tcl
+```
 
 Trajectory reuse uses `.analysis_cache/metadata.json` plus an uncompressed
 `.analysis_cache/records.npz` opened with `allow_pickle=False`. PocketMC never

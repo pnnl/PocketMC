@@ -1,11 +1,49 @@
+# Python bytecode and environments
 __pycache__/
 *.py[cod]
+.venv/
+
+# Test, lint, and coverage caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Packaging and offline-install artifacts
+build/
+dist/
+*.egg-info/
+wheelhouse/
+
+# PocketMC-generated runtime and analysis outputs
 jobs/
 tmp/
-.venv/
-.pytest_cache/
-*.egg-info/
-*.log
+analysis-jobs/
+analysis-results*/
+.analysis_cache/
 config.toml
+analyses.toml
 *.log
+*.out
+*.err
+
+# Editor and operating-system files
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+*~
 .DS_Store
+Thumbs.db
+
+# Local backup copies
+*.bak
+*BAK
+**/bak/
