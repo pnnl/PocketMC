@@ -234,10 +234,12 @@ The three generated launchers have distinct purposes:
 
 On a filesystem that does not preserve the executable bit, run
 `chmod +x run_gcmc.sh` once. Submit either Slurm file with `sbatch <file>` only
-after reviewing its `#SBATCH` directives. The generated files locate the config
-relative to their own directory and call the installed `gcmc-port` command rather
-than recording the user's absolute checkout path. Set `POCKETMC_BIN` only when
-the command has a different name or location.
+after reviewing its `#SBATCH` directives. Direct launchers locate the config
+relative to their own directory. Slurm launchers use `SLURM_SUBMIT_DIR`, so submit
+them from the directory containing the launcher. The generated relative path then
+locates the config, avoiding Slurm's private spool directory without recording the
+user's absolute checkout path. Set `POCKETMC_BIN` only when the command has a
+different name or location.
 
 `init-example` and `run` do not create scheduler files. The three-file set is
 created by the interactive wizard. The `emit-sbatch` command remains available

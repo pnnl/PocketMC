@@ -704,9 +704,10 @@ chmod +x run_gcmc.sh
 ```
 
 The generic and Tahoma-only files deliberately retain `YOUR_ACCOUNT`, causing a
-submission to fail until the user replaces it. Both use paths relative to the
-launcher location, so moving or sharing a complete case does not record the
-original user's absolute checkout path.
+submission to fail until the user replaces it. Submit them from the directory
+containing the launcher. They use Slurm's submission directory and a generated
+relative config path at run time, avoiding Slurm's private spool directory without
+recording the original user's absolute checkout path.
 
 To regenerate only the generic Slurm script from an existing TOML:
 

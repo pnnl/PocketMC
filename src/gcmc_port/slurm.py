@@ -12,28 +12,40 @@ def _script_relative_path(path: Path, script_directory: Path) -> str:
     return Path(os.path.relpath(path.resolve(), script_directory.resolve())).as_posix()
 
 
-def _runtime_path_lines(config: Config, output: Path) -> list[str]:
+def _runtime_path_lines(config: Config, output: Path, *, slurm: bool) -> list[str]:
     config_path = config.config_path.resolve()
     case_dir = config_path.parent.resolve()
     script_directory = output.parent.resolve()
     config_relative = shlex.quote(_script_relative_path(config_path, script_directory))
     case_relative = shlex.quote(_script_relative_path(case_dir, script_directory))
+    if slurm:
+        # Slurm executes a copy of the submitted script from its spool directory,
+        # so BASH_SOURCE[0] does not point at the user's case directory in a job.
+        runtime_directory = 'SCRIPT_DIR="${SLURM_SUBMIT_DIR:?SLURM_SUBMIT_DIR is not set}"'
+    else:
+        runtime_directory = 'SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"'
     return [
-        'SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"',
+        runtime_directory,
         f'CONFIG="$SCRIPT_DIR"/{config_relative}',
         f'CASE_DIR="$SCRIPT_DIR"/{case_relative}',
         'POCKETMC_BIN="${POCKETMC_BIN:-gcmc-port}"',
     ]
 
 
-def _execution_lines(config: Config, output: Path, *, module_setup: list[str]) -> list[str]:
+def _execution_lines(
+    config: Config,
+    output: Path,
+    *,
+    module_setup: list[str],
+    slurm: bool = False,
+) -> list[str]:
     lines = ["set -euo pipefail", "", *module_setup]
     for key, value in config.execution.env.items():
         lines.append(f"export {key}={shlex.quote(value)}")
     lines.extend(
         [
             "",
-            *_runtime_path_lines(config, output),
+            *_runtime_path_lines(config, output, slurm=slurm),
             'cd "$CASE_DIR"',
             'if ! command -v "$POCKETMC_BIN" >/dev/null 2>&1; then',
             '  echo "PocketMC command not found: $POCKETMC_BIN" >&2',
@@ -92,7 +104,9 @@ def render_sbatch(config: Config, output_path: str | Path) -> Path:
     ]
     directives.extend(config.slurm.extra_directives)
     directives.append("")
-    directives.extend(_execution_lines(config, output, module_setup=config.execution.module_setup))
+    directives.extend(
+        _execution_lines(config, output, module_setup=config.execution.module_setup, slurm=True)
+    )
     return _write_executable(output, directives)
 
 
@@ -114,6 +128,7 @@ def render_tahoma_only_sbatch(config: Config, output_path: str | Path) -> Path:
         _execution_lines(
             config,
             output,
+            slurm=True,
             module_setup=[
                 "# Tahoma environment preset",
                 "source /etc/profile.d/modules.sh",
@@ -132,4 +147,11 @@ def render_tahoma_sbatch(config: Config, output_path: str | Path) -> Path:
 
 
 def submit_sbatch(script_path: str | Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["sbatch", str(Path(script_path).resolve())], capture_output=True, text=True, check=False)
+    script = Path(script_path).resolve()
+    return subprocess.run(
+        ["sbatch", script.name],
+        cwd=script.parent,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
